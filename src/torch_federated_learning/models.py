@@ -2,31 +2,63 @@
 # -*- coding: utf-8 -*-
 # Python version: 3.6
 
-import torch.nn.functional as F
+import sys
+import os
+
+import torch.nn.functional as nn_fnx
 
 from torch import nn, optim
-from transformers import AutoModelForSequenceClassification, AutoConfig, AutoTokenizer
+from os import path, getcwd, makedirs
+
+sys.path.insert(0, path.join(getcwd(), "..", ".."))
 
 # Define a common max sequence length that can be imported across modules.
-MAX_SEQUENCE_LENGTH = 512
+MAX_SEQUENCE_LENGTH = 250
 
 # Define a model name: model full name dict.
-nlp_model_name = {
+NLP_MODEL_CONFIG = {
+    "tinybert": {
+        "model_name": "prajjwal1/bert-tiny",
+        "lr": 2e-5,
+    },
     "bert": {
         "model_name": "bert-base-uncased",
+        "lr": 2e-5,
     },
     "roberta": {
         "model_name": "roberta-base",
+        "lr": 2e-5,
     },
     "distilbert": {
         "model_name": "distilbert-base-uncased",
+        "lr": 2e-5,
     },
 }
 
-def get_model(args, img_size=None, nlp_model_dict=nlp_model_name):
+def get_model(args, img_size=None, nlp_model_dict=NLP_MODEL_CONFIG):
+    """Return model (and tokenizer if task is NLP) based on the provided args.
+    For task CV optional argument to return specific sized images.
+
+    Args:
+        args: Parsed input arguments.
+        img_size: Return images resized to specified size.
+            Defaults to None.
+        nlp_model_dict: Dictionary containing model name(key) and initial_model_checkpoint name(value).
+            Defaults to NLP_MODEL_NAME.
+
+    Raises:
+        NotImplementedError: When unimplemented configuration is parsed.
+
+    Returns:
+        if args.task is 'nlp' returns global_model and tokenizer.
+        if args.task is 'cv' returns global_model.
+
+
+    """
     if args.task == 'nlp':
         if args.model in nlp_model_dict.keys():
             model_name = nlp_model_dict[args.model]["model_name"]
+            from transformers import AutoModelForSequenceClassification, AutoConfig, AutoTokenizer
             model_config = AutoConfig.from_pretrained(model_name, num_labels=args.num_classes)
             global_model = AutoModelForSequenceClassification.from_pretrained(model_name, config=model_config)
             tokenizer = AutoTokenizer.from_pretrained(model_name, use_fast=False)
@@ -39,7 +71,7 @@ def get_model(args, img_size=None, nlp_model_dict=nlp_model_name):
         return global_model, tokenizer
 
     elif args.task == 'cv':
-        # BUILD MODEL
+        # Build model.
         if args.model == 'cnn':
             # Convolutional neural network
             if args.dataset == 'mnist':
@@ -48,6 +80,12 @@ def get_model(args, img_size=None, nlp_model_dict=nlp_model_name):
                 global_model = CNNFashion_Mnist(args=args)
             elif args.dataset == 'cifar':
                 global_model = CNNCifar(args=args)
+            else:
+                raise NotImplementedError(
+                    f"""Unrecognised dataset {args.dataset}.
+                    Options are: `mnist`, 'fmnist' and `cifar`.
+                    """
+                )
 
         elif args.model == 'mlp':
             # Multi-layer perceptron
@@ -57,6 +95,12 @@ def get_model(args, img_size=None, nlp_model_dict=nlp_model_name):
                 len_in *= x
                 global_model = MLP(dim_in=len_in, dim_hidden=64,
                                    dim_out=args.num_classes)
+        else:
+            raise NotImplementedError(
+                f"""Unrecognised model {args.model}.
+                Options are: `cnn` and `mlp`.
+                """
+            )
         return global_model
 
     else:
@@ -67,7 +111,17 @@ def get_model(args, img_size=None, nlp_model_dict=nlp_model_name):
         )
 
 
-def get_optimizer(args, model, weight_decay=1e-4):
+def get_optimizer(args, model, weight_decay=1e-4, nlp_model_dict=NLP_MODEL_CONFIG):
+    """Return optimizer using parsed parameters.
+
+    Args:
+        args: Parsed input arguments.
+        model: Model who's parameters are used to set-up optimizer.
+        weight_decay: Weight decay parameter for optimizer.
+
+    Returns:
+        optimizer: Model training optimizer.
+    """
     # Set optimizer
     if args.optimizer == 'sgd':
         optimizer = optim.SGD(model.parameters(),
@@ -108,13 +162,13 @@ class CNNMnist(nn.Module):
         self.fc2 = nn.Linear(50, args.num_classes)
 
     def forward(self, x):
-        x = F.relu(F.max_pool2d(self.conv1(x), 2))
-        x = F.relu(F.max_pool2d(self.conv2_drop(self.conv2(x)), 2))
+        x = nn_fnx.relu(nn_fnx.max_pool2d(self.conv1(x), 2))
+        x = nn_fnx.relu(nn_fnx.max_pool2d(self.conv2_drop(self.conv2(x)), 2))
         x = x.view(-1, x.shape[1]*x.shape[2]*x.shape[3])
-        x = F.relu(self.fc1(x))
-        x = F.dropout(x, training=self.training)
+        x = nn_fnx.relu(self.fc1(x))
+        x = nn_fnx.dropout(x, training=self.training)
         x = self.fc2(x)
-        return F.log_softmax(x, dim=1)
+        return nn_fnx.log_softmax(x, dim=1)
 
 
 class CNNFashion_Mnist(nn.Module):
@@ -151,13 +205,13 @@ class CNNCifar(nn.Module):
         self.fc3 = nn.Linear(84, args.num_classes)
 
     def forward(self, x):
-        x = self.pool(F.relu(self.conv1(x)))
-        x = self.pool(F.relu(self.conv2(x)))
+        x = self.pool(nn_fnx.relu(self.conv1(x)))
+        x = self.pool(nn_fnx.relu(self.conv2(x)))
         x = x.view(-1, 16 * 5 * 5)
-        x = F.relu(self.fc1(x))
-        x = F.relu(self.fc2(x))
+        x = nn_fnx.relu(self.fc1(x))
+        x = nn_fnx.relu(self.fc2(x))
         x = self.fc3(x)
-        return F.log_softmax(x, dim=1)
+        return nn_fnx.log_softmax(x, dim=1)
 
 class modelC(nn.Module):
     def __init__(self, input_size, n_classes=10, **kwargs):
@@ -175,20 +229,20 @@ class modelC(nn.Module):
 
 
     def forward(self, x):
-        x_drop = F.dropout(x, .2)
-        conv1_out = F.relu(self.conv1(x_drop))
-        conv2_out = F.relu(self.conv2(conv1_out))
-        conv3_out = F.relu(self.conv3(conv2_out))
-        conv3_out_drop = F.dropout(conv3_out, .5)
-        conv4_out = F.relu(self.conv4(conv3_out_drop))
-        conv5_out = F.relu(self.conv5(conv4_out))
-        conv6_out = F.relu(self.conv6(conv5_out))
-        conv6_out_drop = F.dropout(conv6_out, .5)
-        conv7_out = F.relu(self.conv7(conv6_out_drop))
-        conv8_out = F.relu(self.conv8(conv7_out))
+        x_drop = nn_fnx.dropout(x, .2)
+        conv1_out = nn_fnx.relu(self.conv1(x_drop))
+        conv2_out = nn_fnx.relu(self.conv2(conv1_out))
+        conv3_out = nn_fnx.relu(self.conv3(conv2_out))
+        conv3_out_drop = nn_fnx.dropout(conv3_out, .5)
+        conv4_out = nn_fnx.relu(self.conv4(conv3_out_drop))
+        conv5_out = nn_fnx.relu(self.conv5(conv4_out))
+        conv6_out = nn_fnx.relu(self.conv6(conv5_out))
+        conv6_out_drop = nn_fnx.dropout(conv6_out, .5)
+        conv7_out = nn_fnx.relu(self.conv7(conv6_out_drop))
+        conv8_out = nn_fnx.relu(self.conv8(conv7_out))
 
-        class_out = F.relu(self.class_conv(conv8_out))
-        pool_out = F.adaptive_avg_pool2d(class_out, 1)
+        class_out = nn_fnx.relu(self.class_conv(conv8_out))
+        pool_out = nn_fnx.adaptive_avg_pool2d(class_out, 1)
         pool_out.squeeze_(-1)
         pool_out.squeeze_(-1)
         return pool_out

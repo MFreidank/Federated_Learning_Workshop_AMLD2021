@@ -2,17 +2,25 @@
 # -*- coding: utf-8 -*-
 # Python version: 3.6
 
+import sys
 import copy
 import torch
 
 import datasets as ds
 
 from torchvision import datasets, transforms
+from os import path, getcwd
 
 from models import MAX_SEQUENCE_LENGTH
-from sampling import mnist_iid, mnist_noniid, mnist_noniid_unequal
-from sampling import cifar_iid, cifar_noniid
-from sampling import ade_iid, ade_noniid
+from sampling import (
+    mnist_iid,
+    mnist_noniid,
+    mnist_noniid_unequal,
+    cifar_iid,
+    cifar_noniid,
+    ade_iid,
+    ade_noniid,
+)
 
 
 def num_batches_per_epoch(num_datapoints: int, batch_size: int) -> int:
@@ -33,13 +41,14 @@ def num_batches_per_epoch(num_datapoints: int, batch_size: int) -> int:
     return num_batches
 
 
-def get_dataset(args, tokenizer=None, max_seq_len=MAX_SEQUENCE_LENGTH):
+def get_dataset(args, tokenizer=None, max_seq_len=MAX_SEQUENCE_LENGTH, custom_sampling=None):
     """ Returns train and test datasets and a user group which is a dict where
     the keys are the user index and the values are the corresponding data for
     each of those users.
     """
 
     if args.task == 'nlp':
+        assert args.dataset == "ade", "Parsed dataset not implemented."
         [complete_dataset] = ds.load_dataset("ade_corpus_v2", "Ade_corpus_v2_classification", split=["train"])
         # Rename column.
         complete_dataset = complete_dataset.rename_column("label", "labels")
@@ -90,7 +99,7 @@ def get_dataset(args, tokenizer=None, max_seq_len=MAX_SEQUENCE_LENGTH):
 
     elif args.task == 'cv':
         if args.dataset == 'cifar':
-            data_dir = '../data/cifar/'
+            data_dir = './data/cifar/'
             apply_transform = transforms.Compose(
                 [transforms.ToTensor(),
                  transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))])
@@ -102,23 +111,29 @@ def get_dataset(args, tokenizer=None, max_seq_len=MAX_SEQUENCE_LENGTH):
                                             transform=apply_transform)
 
             # sample training data amongst users
-            if args.iid:
-                # Sample IID user data from Mnist
-                user_groups = cifar_iid(train_dataset, args.num_users)
+            if custom_sampling is not None:
+                user_groups = custom_sampling(dataset=train_dataset, num_users=args.num_users)
+                # Add assertions to puzzle.
             else:
-                # Sample Non-IID user data from Mnist
-                if args.unequal:
-                    # Chose uneuqal splits for every user
-                    raise NotImplementedError()
+                # sample training data amongst users
+                if args.iid:
+                    # Sample IID user data from Mnist
+                    user_groups = cifar_iid(train_dataset, args.num_users)
                 else:
-                    # Chose euqal splits for every user
-                    user_groups = cifar_noniid(train_dataset, args.num_users)
+                    # Sample Non-IID user data from Mnist
+                    if args.unequal:
+                        # Chose uneuqal splits for every user
+                        raise NotImplementedError()
+                    else:
+                        # Chose euqal splits for every user
+                        user_groups = cifar_noniid(train_dataset, args.num_users)
+
 
         elif args.dataset == 'mnist' or 'fmnist':
             if args.dataset == 'mnist':
-                data_dir = '../data/mnist/'
+                data_dir = './data/mnist/'
             else:
-                data_dir = '../data/fmnist/'
+                data_dir = './data/fmnist/'
 
             apply_transform = transforms.Compose([
                 transforms.ToTensor(),
@@ -130,7 +145,6 @@ def get_dataset(args, tokenizer=None, max_seq_len=MAX_SEQUENCE_LENGTH):
             test_dataset = datasets.MNIST(data_dir, train=False, download=True,
                                           transform=apply_transform)
 
-            # sample training data amongst users
             if args.iid:
                 # Sample IID user data from Mnist
                 user_groups = mnist_iid(train_dataset, args.num_users)
@@ -158,15 +172,16 @@ def get_dataset(args, tokenizer=None, max_seq_len=MAX_SEQUENCE_LENGTH):
     return train_dataset, test_dataset, user_groups
 
 
-def average_weights(w):
+def average_weights(local_trained_weights):
     """Returns the average of the weights.
     """
-    w_avg = copy.deepcopy(w[0])
-    for key in w_avg.keys():
-        for i in range(1, len(w)):
-            w_avg[key] += w[i][key]
-        w_avg[key] = torch.div(w_avg[key], len(w))
-    return w_avg
+    # Initialize copy model weights with the untrained model weights.
+    avg_weights = copy.deepcopy(local_trained_weights[0])
+    for key in avg_weights.keys():
+        for i in range(1, len(local_trained_weights)):
+            avg_weights[key] += local_trained_weights[i][key]
+        avg_weights[key] = torch.div(avg_weights[key], len(local_trained_weights))
+    return avg_weights
 
 
 def exp_details(args):
