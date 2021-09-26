@@ -11,6 +11,8 @@ This example introduces basic primitives of a successful PySyft Duet Exchange:
 * issuing access requests as a client/data scientist
 * approving/denying requests for data access as a data owner
 
+Please use the google colab notebook links below to access the relevant materials:
+
 * Data Owner:
 [Data Owner Notebook](https://colab.research.google.com/drive/1lPa95bboyd_4GTljn_PJtAgxra3l7T7e?usp=sharing)
 
@@ -20,6 +22,8 @@ This example introduces basic primitives of a successful PySyft Duet Exchange:
 ### Syft\_FL\_Example
 This example showcases a basic federated learning exchange (with a data scientist modeling against 
 data held by two separate data owners) using PySyft Duet. 
+
+Please use the google colab notebook links below to access the relevant materials:
 
 * Data Owner 1:
 [Data Owner 1 Notebook](https://colab.research.google.com/drive/12pEcshA3eH55LeAWO_dmg5EflDQWpTlD?usp=sharing)
