@@ -1,9 +1,9 @@
 # Federated Learning Workshop AMLD2021
 
 
-## Interactive Examples: Syft
+## 2. Interactive Examples: Syft
 
-### Simple Syft Duet Intro
+### 2.1 Simple Syft Duet Intro
 
 This example introduces basic primitives of a successful PySyft Duet Exchange: 
 * establishing a duet connection between data owner and client
@@ -19,7 +19,7 @@ Please use the google colab notebook links below to access the relevant material
 * Data Scientist:
 [Data Scientist Notebook](https://colab.research.google.com/drive/107zodT2X6rogAoYQSUprOQu-mkk7BPs3?usp=sharing)
 
-### Syft FL Example
+### 2.2 Syft FL Example
 This example showcases a basic federated learning exchange (with a data scientist modeling against 
 data held by two separate data owners) using PySyft Duet. 
 
