@@ -12,4 +12,4 @@ In the simulation we:
 
 Please use the google colab notebook links below to access the relevant materials:
 
-[PyTorch FL Simulation Notebook](https://colab.research.google.com/drive/1lPa95bboyd_4GTljn_PJtAgxra3l7T7e?usp=sharing)
+[PyTorch FL Simulation Notebook](https://colab.research.google.com/drive/1a1Ekw5jFs8eYOxAhsBRwFAt3WxEBsyf9)
