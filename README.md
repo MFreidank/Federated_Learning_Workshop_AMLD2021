@@ -4,7 +4,7 @@
 ## 1. Interactive Examples: torch Federated Learning
 ### 1.1 Simulating Federated Learning using torch
 
-This example introduces basic components that are part of the Federated Learningi workflow.
+This example introduces basic components that are part of the Federated Learning workflow.
 In the simulation we:
 1. Train a baseline model on the CIFAR10 dataset.
 2. Simulate a server and client and send a model from server to client to be trained.
