@@ -99,7 +99,9 @@ if __name__ == '__main__':
         for train_client_idx in list(idxs_users):
             heldout_clients.remove(train_client_idx)
         ###
-        for heldout_client_idx, idx in tqdm(enumerate(heldout_clients), desc='Evaluating: Hidden client num:', total=len(heldout_clients)):
+        for heldout_client_idx, idx in tqdm(enumerate(heldout_clients),
+                                            desc='Evaluating: Hidden client num:',
+                                            total=len(heldout_clients)):
             client_shard = ClientShard(args=args,
                                        client_idx=heldout_client_idx,
                                        dataset=train_dataset,

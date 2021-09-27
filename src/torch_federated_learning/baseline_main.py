@@ -76,7 +76,6 @@ if __name__ == '__main__':
                 batch_loss.append(loss.item())
             # Average the batch loss and append to epoch loss list.
             loss_avg = sum(batch_loss) / len(batch_loss)
-            print('\nTrain loss:', loss_avg)
             epoch_loss.append(loss_avg)
         ### }}} End of natural language classification model training.
 
@@ -95,7 +94,7 @@ if __name__ == '__main__':
         criterion = torch.nn.NLLLoss().to(device)
         trainloader = DataLoader(train_dataset, batch_size=64, shuffle=True)
         epoch_loss = []
-        for epoch in tqdm(range(args.epochs)):
+        for epoch in range(args.epochs):
             batch_loss = []
 
             for batch_idx, (images, labels) in enumerate(trainloader):
@@ -114,7 +113,6 @@ if __name__ == '__main__':
                 batch_loss.append(loss.item())
 
             loss_avg = sum(batch_loss) / len(batch_loss)
-            print('\nTrain loss:', loss_avg)
             epoch_loss.append(loss_avg)
         ### }}} End of computer vision model training.
     else:

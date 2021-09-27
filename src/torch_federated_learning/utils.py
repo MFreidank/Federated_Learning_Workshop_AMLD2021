@@ -113,7 +113,14 @@ def get_dataset(args, tokenizer=None, max_seq_len=MAX_SEQUENCE_LENGTH, custom_sa
             # sample training data amongst users
             if custom_sampling is not None:
                 user_groups = custom_sampling(dataset=train_dataset, num_users=args.num_users)
-                # Add assertions to puzzle.
+                assert len(user_groups) == args.num_users, "Incorrect number of users generated."
+                check_client_sampled_data = []
+                for client_idx, client_samples in user_groups.items():
+                    assert len(client_samples) == len(train_dataset)/args.num_users, "Incorrectly sampled client shard."
+                    for record in client_samples:
+                        check_client_sampled_data.append(record)
+                assert len(set(check_client_sampled_data)) == len(train_dataset), "Client shards are not i.i.d"
+                print("Congratulations! You've got it :)")
             else:
                 # sample training data amongst users
                 if args.iid:
