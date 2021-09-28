@@ -1,5 +1,19 @@
 # Federated Learning Workshop AMLD2021
 
+## Preparations
+
+We've tried to keep this workshop light on the setup/preparations side by using 
+[Google Colab](https://colab.research.google.com/) for a majority of the materials and exercises that we will cover. 
+
+Therefore, the main requirement is access to a Google account which would be required 
+to access the notebooks we prepared. 
+
+Please ensure you have access to a google account you can use, or [create one](https://accounts.google.com/SignUp?hl=en)
+in preparation for the session. 
+
+Don't worry about studying the notebooks below, these will be covered as 
+integral part of the workshop and will remain available to you afterwards as well.
+
 
 ## 1. Interactive Examples: torch Federated Learning
 ### 1.1 Simulating Federated Learning using torch
