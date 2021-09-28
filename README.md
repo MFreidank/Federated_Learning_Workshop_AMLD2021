@@ -60,3 +60,8 @@ Please use the google colab notebook links below to access the relevant material
 
 * Data Scientist:
 [Data Scientist Notebook](https://colab.research.google.com/drive/1o8wOkrprb8ecKkkiU9AdL2NHxZwA6g4F?usp=sharing)
+
+### 2.3 Opacus Example
+This example discusses how to use opacus for differential privacy to ensure
+data privacy while training models collaboratively.
+
