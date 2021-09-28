@@ -24,7 +24,7 @@ In the simulation we:
 2. Simulate a server & client and send a model from server to client to be trained.
 3. Simulate a server & multiple clients and train a global model on multiple clients and perform FedAvg.
 
-Please use the google colab notebook links below to access the relevant materials:
+Please use the google colab notebook link below to access the relevant material:
 
 [PyTorch FL Simulation Notebook](https://colab.research.google.com/drive/1a1Ekw5jFs8eYOxAhsBRwFAt3WxEBsyf9)
 
@@ -47,6 +47,7 @@ Please use the google colab notebook links below to access the relevant material
 [Data Scientist Notebook](https://colab.research.google.com/drive/107zodT2X6rogAoYQSUprOQu-mkk7BPs3?usp=sharing)
 
 ### 2.2 Syft FL Example
+
 This example showcases a basic federated learning exchange (with a data scientist modeling against 
 data held by two separate data owners) using PySyft Duet. 
 
@@ -65,3 +66,7 @@ Please use the google colab notebook links below to access the relevant material
 This example discusses how to use opacus for differential privacy to ensure
 data privacy while training models collaboratively.
 
+Please use the google colab notebook link below to access the relevant material:
+
+* Opacus Example:
+[Opacus Example Notebook](https://colab.research.google.com/drive/1bWfrmQ4FuJ0UxyU0lkPNdH384iI9JDWm?usp=sharing)
